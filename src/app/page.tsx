@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { authorizeWithSpotify, getAccessToken, SPOTIFY_CLIENT_ID } from "@/lib/spotify/auth";
 import { spotifyRepository } from "@/lib/repository/spotifyRepository";
