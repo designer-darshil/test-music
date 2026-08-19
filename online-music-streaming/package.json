@@ -1,5 +1,5 @@
 {
-  "name": "app-temp",
+  "name": "online-music-streaming",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,12 +8,17 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "prisma": {
+    "seed": "ts-node -O '{\"module\":\"CommonJS\"}' prisma/seed.ts"
+  },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "lucide-react": "^1.32.0",
     "next": "14.2.35",
     "next-auth": "^5.0.0-beta.32",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -21,11 +26,11 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
-    "eslint-config-prettier": "^10.1.8",
     "postcss": "^8",
-    "prettier": "^3.9.6",
     "prisma": "^6.19.3",
     "tailwindcss": "^3.4.1",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.23.12",
     "typescript": "^5"
   }
 }
