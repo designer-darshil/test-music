@@ -1,4 +1,4 @@
-export const SPOTIFY_CLIENT_ID = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || 'your_spotify_client_id';
+export const SPOTIFY_CLIENT_ID = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || '3d299c841ff84b769aa7c91c4e9868d1';
 export const REDIRECT_URI = typeof window !== 'undefined' ? `${window.location.origin}/callback` : '';
 const SCOPES = 'user-read-private user-read-email user-library-read user-top-read playlist-read-private playlist-modify-public playlist-modify-private';
 
@@ -63,15 +63,15 @@ export async function requestAccessToken(code: string) {
   if (!response.ok) {
     throw new Error('HTTP status ' + response.status);
   }
-  
+
   const data = await response.json();
   window.localStorage.setItem('spotify_access_token', data.access_token);
   window.localStorage.setItem('spotify_refresh_token', data.refresh_token);
-  
+
   // Set expiration
   const expiry = new Date().getTime() + data.expires_in * 1000;
   window.localStorage.setItem('spotify_token_expiry', expiry.toString());
-  
+
   return data;
 }
 
@@ -80,7 +80,7 @@ export function getAccessToken() {
   const expiry = window.localStorage.getItem('spotify_token_expiry');
   if (expiry && new Date().getTime() > parseInt(expiry)) {
     // Needs refresh (simplification for MVP: just return null to re-auth)
-    return null; 
+    return null;
   }
   return window.localStorage.getItem('spotify_access_token');
 }
