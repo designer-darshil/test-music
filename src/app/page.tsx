@@ -67,6 +67,8 @@ export default function Home() {
       console.error(e);
       if (e.message === 'token_expired') {
         setGlobalError('Spotify session expired');
+      } else if (e.message === 'forbidden_scope') {
+        setGlobalError('Spotify blocked access (403). Your account must be added to the Spotify Developer Dashboard "User Management" list while the app is in Development mode. If you recently changed scopes, please Reconnect.');
       } else {
         setGlobalError(`Failed to load data: ${e.message}`);
       }
@@ -114,8 +116,8 @@ export default function Home() {
       {globalError && (
         <div className="bg-red-900/50 border border-red-500 p-4 rounded-xl flex items-center justify-between">
           <span className="text-red-200">{globalError}</span>
-          {globalError.includes('expired') && (
-             <button onClick={authorizeWithSpotify} className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold">
+          {(globalError.includes('expired') || globalError.includes('Reconnect')) && (
+             <button onClick={authorizeWithSpotify} className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap ml-4">
                Reconnect Spotify
              </button>
           )}
