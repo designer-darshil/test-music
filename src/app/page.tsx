@@ -109,7 +109,7 @@ export default function Home() {
           )}
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">{profile?.displayName}'s Workspace</h1>
+          <h1 className="text-3xl font-bold text-white tracking-tight">{profile?.displayName}&apos;s Workspace</h1>
           <p className="text-neutral-400 flex items-center mt-1">
             <Activity className="w-4 h-4 mr-2" /> Spotify Premium Sync Active
           </p>
