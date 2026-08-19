@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { authorizeWithSpotify, getAccessToken } from "@/lib/spotify/auth";
+import { authorizeWithSpotify, getAccessToken, SPOTIFY_CLIENT_ID } from "@/lib/spotify/auth";
 import { spotifyAdapter } from "@/lib/spotify/adapter";
 import { UnifiedSearchResult } from "@/lib/providers/interfaces";
 import { Play } from "lucide-react";
@@ -29,7 +29,7 @@ export default function Home() {
   }
 
   if (!isAuthenticated) {
-    const isClientIdMissing = !process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID || process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID === 'your_spotify_client_id';
+    const isClientIdMissing = !SPOTIFY_CLIENT_ID || SPOTIFY_CLIENT_ID === 'your_spotify_client_id';
 
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] p-8 text-center">
@@ -41,13 +41,12 @@ export default function Home() {
         {isClientIdMissing ? (
           <div className="bg-red-900/50 border border-red-500 text-red-200 p-4 rounded-md max-w-md mb-8 text-sm text-left">
             <p className="font-bold mb-2">Missing Spotify Client ID</p>
-            <p>You need to create a Spotify Developer Application and add its Client ID to your environment variables:</p>
-            <code className="block bg-black/50 p-2 mt-2 rounded">NEXT_PUBLIC_SPOTIFY_CLIENT_ID=your_id_here</code>
+            <p>You need to create a Spotify Developer Application and add its Client ID to your environment variables or in <code>auth.ts</code>.</p>
           </div>
         ) : null}
 
         <button 
-          onClick={isClientIdMissing ? () => alert('Please configure NEXT_PUBLIC_SPOTIFY_CLIENT_ID in your environment variables.') : authorizeWithSpotify}
+          onClick={isClientIdMissing ? () => alert('Please configure your Spotify Client ID.') : authorizeWithSpotify}
           className={`${isClientIdMissing ? 'bg-neutral-600 cursor-not-allowed' : 'bg-green-500 hover:scale-105'} text-black px-8 py-4 rounded-full font-bold text-lg transition-transform`}
         >
           Connect Spotify
