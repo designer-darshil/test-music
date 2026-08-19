@@ -13,8 +13,11 @@ export default function Home() {
   const [topTracks, setTopTracks] = useState<AppTrack[]>([]);
   const [recentTracks, setRecentTracks] = useState<AppTrack[]>([]);
   const [playlists, setPlaylists] = useState<AppPlaylist[]>([]);
+  
+  const [recentTracksError, setRecentTracksError] = useState<string | null>(null);
+  const [topTracksError, setTopTracksError] = useState<string | null>(null);
+  const [globalError, setGlobalError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const token = getAccessToken();
@@ -27,25 +30,45 @@ export default function Home() {
   }, []);
 
   const fetchData = async () => {
+    setLoading(true);
+    setGlobalError(null);
+    setRecentTracksError(null);
+    setTopTracksError(null);
+
     try {
-      setLoading(true);
-      setError(null);
-      const [prof, tracks, recent, pl] = await Promise.all([
-        spotifyRepository.getProfile(),
+      // Profile is required for the workspace to look right
+      const prof = await spotifyRepository.getProfile();
+      setProfile(prof);
+
+      // Fetch other data independently so a 403 in one doesn't crash everything
+      const [tracksRes, recentRes, plRes] = await Promise.allSettled([
         spotifyRepository.getTopTracks(),
         spotifyRepository.getRecentlyPlayed(),
         spotifyRepository.getUserPlaylists()
       ]);
-      setProfile(prof);
-      setTopTracks(tracks);
-      setRecentTracks(recent);
-      setPlaylists(pl);
+
+      if (tracksRes.status === 'fulfilled') {
+        setTopTracks(tracksRes.value);
+      } else {
+        setTopTracksError(tracksRes.reason.message);
+      }
+
+      if (recentRes.status === 'fulfilled') {
+        setRecentTracks(recentRes.value);
+      } else {
+        setRecentTracksError(recentRes.reason.message);
+      }
+
+      if (plRes.status === 'fulfilled') {
+        setPlaylists(plRes.value);
+      }
+
     } catch (e: any) {
       console.error(e);
-      if (e.message === 'token_expired' || e.message === 'forbidden_scope') {
-        setError('Your Spotify session requires reauthorization to access new data (like recent tracks). Please reconnect.');
+      if (e.message === 'token_expired') {
+        setGlobalError('Spotify session expired');
       } else {
-        setError(`Failed to load data: ${e.message}`);
+        setGlobalError(`Failed to load data: ${e.message}`);
       }
     } finally {
       setLoading(false);
@@ -88,12 +111,12 @@ export default function Home() {
   return (
     <div className="p-4 md:p-8 pb-32 max-w-7xl mx-auto space-y-12">
       
-      {error && (
+      {globalError && (
         <div className="bg-red-900/50 border border-red-500 p-4 rounded-xl flex items-center justify-between">
-          <span className="text-red-200">{error}</span>
-          {(error.includes('reconnect') || error.includes('reauthorization')) && (
+          <span className="text-red-200">{globalError}</span>
+          {globalError.includes('expired') && (
              <button onClick={authorizeWithSpotify} className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-bold">
-               Reconnect
+               Reconnect Spotify
              </button>
           )}
         </div>
@@ -125,9 +148,27 @@ export default function Home() {
             <h2 className="text-xl font-bold">Listening Pulse</h2>
           </div>
           
-          {recentTracks.length === 0 ? (
+          {recentTracksError === 'forbidden_scope' ? (
+            <div className="p-6 bg-neutral-900 border border-red-500/50 rounded-2xl flex flex-col items-start space-y-4">
+              <div>
+                <p className="text-red-400 font-bold mb-1">Listening history unavailable</p>
+                <p className="text-neutral-400 text-sm">Allow access to your Spotify listening history to show recently played tracks.</p>
+              </div>
+              <button onClick={authorizeWithSpotify} className="bg-neutral-800 hover:bg-neutral-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">
+                Allow Access
+              </button>
+            </div>
+          ) : recentTracksError === 'rate_limited' ? (
+             <div className="p-8 bg-neutral-900 rounded-2xl text-center border border-yellow-500/50">
+               <p className="text-yellow-400">Spotify is temporarily rate limiting requests. We&apos;ll retry automatically later.</p>
+             </div>
+          ) : recentTracksError ? (
+             <div className="p-8 bg-neutral-900 rounded-2xl text-center border border-red-500/50">
+               <p className="text-red-400">Failed to load recent tracks.</p>
+             </div>
+          ) : recentTracks.length === 0 ? (
             <div className="p-8 bg-neutral-900 rounded-2xl text-center border border-neutral-800">
-              <p className="text-neutral-500">No recent tracks found on your account.</p>
+              <p className="text-neutral-500">Spotify hasn&apos;t returned any recently played tracks for this account.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -153,9 +194,27 @@ export default function Home() {
             <h2 className="text-xl font-bold">Your Top Tracks</h2>
           </div>
 
-          {topTracks.length === 0 ? (
+          {topTracksError === 'forbidden_scope' ? (
+            <div className="p-6 bg-neutral-900 border border-red-500/50 rounded-2xl flex flex-col items-start space-y-4">
+              <div>
+                <p className="text-red-400 font-bold mb-1">Top tracks unavailable</p>
+                <p className="text-neutral-400 text-sm">Allow access to your top listening data to view this section.</p>
+              </div>
+              <button onClick={authorizeWithSpotify} className="bg-neutral-800 hover:bg-neutral-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">
+                Allow Access
+              </button>
+            </div>
+          ) : topTracksError === 'rate_limited' ? (
+             <div className="p-8 bg-neutral-900 rounded-2xl text-center border border-yellow-500/50">
+               <p className="text-yellow-400">Spotify is temporarily rate limiting requests. We&apos;ll retry automatically later.</p>
+             </div>
+          ) : topTracksError ? (
+             <div className="p-8 bg-neutral-900 rounded-2xl text-center border border-red-500/50">
+               <p className="text-red-400">Failed to load top tracks.</p>
+             </div>
+          ) : topTracks.length === 0 ? (
             <div className="p-8 bg-neutral-900 rounded-2xl text-center border border-neutral-800">
-              <p className="text-neutral-500">Not enough listening history for top tracks.</p>
+              <p className="text-neutral-500">Not enough listening history to calculate top tracks.</p>
             </div>
           ) : (
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
