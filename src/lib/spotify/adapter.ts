@@ -1,7 +1,14 @@
 import { MetadataProvider, UnifiedSearchResult, Artist, Playlist } from "../providers/interfaces";
 import { getAccessToken } from "./auth";
+import { getMockData } from "./mockData";
+import { USE_MOCK_DATA } from "./client";
 
 async function fetchWebApi(endpoint: string, method: string = 'GET', body?: any) {
+  if (USE_MOCK_DATA) {
+    console.log(`[MOCK] Spotify WebAPI fetch: ${endpoint}`);
+    return new Promise(resolve => setTimeout(() => resolve(getMockData(endpoint)), 300));
+  }
+
   const token = getAccessToken();
   if (!token) throw new Error("No Spotify access token available.");
 

@@ -1,7 +1,15 @@
 import { getAccessToken, refreshAccessToken, isTokenExpired } from "./auth";
+import { getMockData } from "./mockData";
+
+export const USE_MOCK_DATA = true;
 
 export class SpotifyApiClient {
   async fetch(endpoint: string, method: string = 'GET', body?: any) {
+    if (USE_MOCK_DATA) {
+      console.log(`[MOCK] Spotify fetch: ${endpoint}`);
+      return new Promise(resolve => setTimeout(() => resolve(getMockData(endpoint)), 300));
+    }
+
     if (isTokenExpired()) {
       try {
         await refreshAccessToken();
